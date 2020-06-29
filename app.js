@@ -4,8 +4,9 @@ const port = 3000;
 
 require('svelte/register');
 const App = require('./src/App.svelte').default;
+const Sass = require('./public/build/ssr/Sass.js');
 
-const template = (head, html, css) => `
+const template = (head, html, css, bundle) => `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -18,7 +19,7 @@ const template = (head, html, css) => `
         <link rel='stylesheet' href='/global.css'>
         ${head}
         <style>${css.code}</style>
-        <script defer src='/build/bundle.js'></script>
+        <script defer type='module' src='/build/${bundle}.js'></script>
     </head>
 
     <body>${html}</body>
@@ -30,7 +31,13 @@ app.get("/ssr", (req, res) => {
     const { head, html, css } = App.render({
         name: 'World'
     });
-    res.send(template(head, html, css));
+    res.send(template(head, html, css, 'main'));
+});
+app.get("/ssr/sass", (req, res) => {
+    const { head, html, css } = Sass.render({
+        name: 'World'
+    });
+    res.send(template(head, html, css, 'sass'));
 });
 
 app.listen(port, () => console.log(`Listening at http://localhost:${port}`));

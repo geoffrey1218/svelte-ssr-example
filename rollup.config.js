@@ -3,16 +3,17 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
+import autoPreprocess from 'svelte-preprocess';
 
 const production = !process.env.ROLLUP_WATCH;
 
-export default {
-	input: 'src/main.js',
+const defaultConfig = {
+	input: ['src/main.js', 'src/sass.js'],
 	output: {
 		sourcemap: true,
-		format: 'iife',
+		format: 'esm',
 		name: 'app',
-		file: 'public/build/bundle.js'
+		dir: 'public/build'
 	},
 	plugins: [
 		svelte({
@@ -23,7 +24,8 @@ export default {
 			css: css => {
 				css.write('public/build/bundle.css');
 			},
-			hydratable: true
+			hydratable: true,
+			preprocess: autoPreprocess()
 		}),
 
 		// If you have external dependencies installed from
@@ -53,6 +55,38 @@ export default {
 		clearScreen: false
 	}
 };
+
+const ssrConfig = {
+	input: 'src/Sass.svelte',
+	output: {
+		sourcemap: true,
+		format: 'cjs',
+		name: 'app',
+		file: 'public/build/ssr/Sass.js'
+	},
+	plugins: [
+		svelte({
+			// enable run-time checks when not in production
+			dev: !production,
+			hydratable: true,
+			preprocess: autoPreprocess(),
+			generate: 'ssr'
+		}),
+
+		// If you have external dependencies installed from
+		// npm, you'll most likely need these plugins. In
+		// some cases you'll need additional configuration -
+		// consult the documentation for details:
+		// https://github.com/rollup/plugins/tree/master/packages/commonjs
+		resolve({
+			browser: true,
+			dedupe: ['svelte']
+		}),
+		commonjs()
+	]
+};
+
+export default [defaultConfig, ssrConfig];
 
 function serve() {
 	let started = false;
