@@ -18,6 +18,7 @@ const template = (head, html, css) => `
         <link rel='stylesheet' href='/global.css'>
         ${head}
         <style>${css.code}</style>
+        <script defer src='/build/bundle.js'></script>
     </head>
 
     <body>${html}</body>
@@ -29,7 +30,6 @@ app.get("/ssr", (req, res) => {
     const { head, html, css } = App.render({
         name: 'World'
     });
-    console.log(css);
     res.send(template(head, html, css));
 });
 
